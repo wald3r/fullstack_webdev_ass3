@@ -47,16 +47,18 @@ const App = () => {
     var result = window.confirm("Do you really want to delete this person?")
     if(result){
         personsService
-        .remove(id)
-        setPersons(persons.filter(function(value){
-          return value.id !== id
-      }))
-      setNotificationMessage(`Person deleted`)
-      setTimeout(() => { setNotificationMessage('')}, 5000)
-      .catch(error => {
-        setErrorMessage(`Couldn't delete this person`)
-        setTimeout(() => { setErrorMessage('')}, 5000)
-      })
+          .remove(id)
+          .then(response => {
+            setPersons(persons.filter(function(value){
+              return value.id !== id
+            }))
+            setNotificationMessage(`Person deleted`)
+            setTimeout(() => { setNotificationMessage('')}, 5000)
+          })
+          .catch(error => {
+            setErrorMessage(`Couldn't delete this person`)
+            setTimeout(() => { setErrorMessage('')}, 5000)
+          })
     }
 
   }
