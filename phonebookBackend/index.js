@@ -8,7 +8,7 @@ require('dotenv').config()
 const Person = require('./models/person')
 
 morgan.token('body', function getBody (req){
-   return JSON.stringify(req.body)
+    return JSON.stringify(req.body)
 })
 
 app.use(express.static('build'))
@@ -18,16 +18,12 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 
 
 
-app.get('/', (req, resp) => {
-    resp.send('<h1>Hello World!</h1>')
-  })
+app.get('/', (req, resp) => resp.send('<h1>Hello World!</h1>'))
   
 
 app.get('/api/persons', (req, resp, next) => {
     Person.find({})
-        .then(persons => {
-            resp.json(persons.map(person => person.toJSON()))
-        })
+        .then(persons => resp.json(persons.map(person => person.toJSON())))
         .catch(error => next(error))
 })
 
@@ -52,7 +48,7 @@ app.delete('/api/persons/:id', (req, resp, next) => {
         .catch(error => next(error))
 })
 
-app.get('/info', (req, resp, error) => {
+app.get('/info', (req, resp, next) => {
     let time = new Date
     Person
         .count({})
@@ -64,7 +60,7 @@ app.get('/info', (req, resp, error) => {
     
 })
 
-app.post('/api/persons', (req, resp) => {
+app.post('/api/persons', (req, resp, next) => {
     const body = req.body
     if(!body.name || !body.number){
         return resp.status(404).json({
@@ -77,35 +73,38 @@ app.post('/api/persons', (req, resp) => {
         number: body.number,
     })
 
-    person.save().then(savedPerson => {
-        resp.json(savedPerson.toJSON())
-    })
+    person.save()
+        .then(savedPerson => savedPerson.toJSON())
+        .then(savedandFormattedPerson => resp.json(savedandFormattedPerson))
+        .catch(error => next(error))   
 })
 
 app.put('/api/persons/:id', (req, resp, next) => {
     const body = req.body
   
     const person = {
-      name: body.name,
-      number: body.number,
+        name: body.name,
+        number: body.number,
     }
   
     Person.findByIdAndUpdate(req.params.id, person)
-      .then(updatedPerson => {
-        resp.json(updatedPerson.toJSON())
-      })
-      .catch(error => next(error))
-  })
+        .then(updatedPerson => {
+            resp.json(updatedPerson.toJSON())
+        })
+        .catch(error => next(error))
+})
 
 const errorHandler = (error, req, resp, next) => {
     console.error(error.message)
   
     if (error.name === 'CastError' && error.kind == 'ObjectId') {
-      return resp.status(400).send({ error: 'malformatted id' })
-    } 
-  
+        return resp.status(400).send({ error: 'malformatted id' })
+    }
+    if (error.name === 'ValidationError') {
+        return resp.status(400).json({ error: error.message })
+    }
     next(error)
-  }
+}
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001

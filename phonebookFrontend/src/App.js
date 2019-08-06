@@ -91,7 +91,8 @@ const App = () => {
           setTimeout(() => { setNotificationMessage('')}, 5000)
         })
         .catch(error => {
-          setErrorMessage(`Couldn't add ${personsObject.name}`)
+          console.log(error.response.data)
+          setErrorMessage(error.response.data.error) 
           setTimeout(() => { setErrorMessage('')}, 5000)
         })
     }
@@ -106,7 +107,8 @@ const App = () => {
             setTimeout(() => { setNotificationMessage('')}, 5000)
           })
           .catch(error => {
-            setErrorMessage(`Couldn't update ${personsObject.name}'s number`)
+            console.log(error.response.data)
+            setErrorMessage(error.response.data.error)
             setTimeout(() => { setErrorMessage('')}, 5000)
           })
         }
